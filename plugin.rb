@@ -16,7 +16,7 @@ after_initialize do
   class DiscourseUpdatedTopics::UpdatedTopicsController < ::ApplicationController
 
     def comment_numbers
-      since = params[:sync_period].to_i.days
+      since = params[:sync_period].to_i.minutes
       time_range = (Time.now - since)..Time.now
       topics_data = Topic.joins(:topic_embed)
                         .where(updated_at: time_range)
