@@ -28,11 +28,18 @@ after_initialize do
     # before the property was added to Discourse Topics. Possibly, a 'legacy' option
     # could be added to the plugin, so that when the plugin is used on new Discourse/WordPress
     # installations, the join to the TopicEmbed table could be left out.
+    # For multisite installations, the topic_embed will need to be required. To
+    # only pull data for posts published on a specific WordPress subsite, the site_url
+    # is sent as a parameter. If this is too inefficient, it would be possible to
+    # return all data to each subsite, and parse the data on WordPress.
     def comment_numbers
+      site_url = CGI.unescape(params[:site_url])
       since = params[:sync_period].to_i.minutes
       time_range = (Time.current - since)..Time.current
+
       topics_data = Topic.joins(:topic_embed)
                         .where(updated_at: time_range)
+                        .where("topic_embeds.embed_url LIKE ?", "#{site_url}/%")
                         .pluck(:id, :title, :posts_count, :embed_url)
                         .map {|t| {id: t[0], title: t[1], comment_count: t[2] - 1, embed_url: t[3]}}
 
