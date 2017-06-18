@@ -32,7 +32,7 @@ after_initialize do
     # only pull data for posts published on a specific WordPress subsite, the site_url
     # is sent as a parameter. If this is too inefficient, it would be possible to
     # return all data to each subsite, and parse the data on WordPress.
-    def comment_numbers
+    def topic_data
       site_url = CGI.unescape(params[:site_url])
       since = params[:sync_period].to_i.minutes
       time_range = (Time.current - since)..Time.current
@@ -48,10 +48,10 @@ after_initialize do
   end
 
   DiscourseUpdatedTopics::Engine.routes.draw do
-    get 'comment-numbers/:sync_period' => 'updated_topics#comment_numbers'
+    get 'topic-data/:sync_period' => 'updated_topics#topic_data', constraints: { sync_period: /\d+/, format: 'json' }
   end
 
   Discourse::Application.routes.append do
-    mount ::DiscourseUpdatedTopics::Engine, at: 'discourse-updated-topics'
+    mount ::DiscourseUpdatedTopics::Engine, at: 'discourse-updated-topics', constraints: AdminConstraint.new
   end
 end
